@@ -8,20 +8,25 @@ import { UpdatePostDto } from './dto/update-post.dto';
 export class PostsService {
   private logger = new Logger(PostsService.name);
 
-  constructor(private prismaService: PrismaService) { }
-
-  async create(createPostDto: CreatePostDto) {
-    const result = await this.prismaService.post.create({ data: createPostDto });
-    this.logger.log(`Post has been created : ${JSON.stringify(result)}`)
-    return result
-  }
+  constructor(private prismaService: PrismaService) {}
 
   findAll(query?: Prisma.PostInclude) {
     return this.prismaService.post.findMany({ include: query });
   }
 
   findOne(id: string, query?: Prisma.PostInclude) {
-    return this.prismaService.post.findUnique({ where: { id }, include: query });
+    return this.prismaService.post.findUnique({
+      where: { id },
+      include: query,
+    });
+  }
+
+  async create(createPostDto: CreatePostDto) {
+    const result = await this.prismaService.post.create({
+      data: createPostDto,
+    });
+    this.logger.log(`Post has been created : ${JSON.stringify(result)}`);
+    return result;
   }
 
   async update(id: string, updatePostDto: UpdatePostDto) {
@@ -29,13 +34,13 @@ export class PostsService {
       data: updatePostDto,
       where: { id },
     });
-    this.logger.warn(`Post has been updated : ${JSON.stringify(result)}`)
-    return result
+    this.logger.warn(`Post has been updated : ${JSON.stringify(result)}`);
+    return result;
   }
 
   async remove(id: string) {
     const result = await this.prismaService.post.delete({ where: { id } });
-    this.logger.warn(`Post has been deleted : ${JSON.stringify(result)}`)
-    return result
+    this.logger.warn(`Post has been deleted : ${JSON.stringify(result)}`);
+    return result;
   }
 }

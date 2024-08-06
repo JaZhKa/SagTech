@@ -21,7 +21,7 @@ export class AuthService implements OnModuleInit {
         return user
     }
     async login(user: any) {
-        const payload = { email: user.email, sub: user.id };
+        const payload = { email: user.email, sub: user.id, role: user.role };
         return {
             access_token: this.jwtService.sign(payload),
         };
@@ -29,6 +29,6 @@ export class AuthService implements OnModuleInit {
 
     async register(user: CreateUserDto) {
         const newUser = await this.usersService.create(user)
-        return this.login(newUser)
+        return newUser
     }
 }

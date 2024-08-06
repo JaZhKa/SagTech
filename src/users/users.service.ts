@@ -8,9 +8,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersService {
   private logger = new Logger(UsersService.name);
   constructor(private prismaService: PrismaService) {}
+
   getUserByEmail(email: string) {
     return this.prismaService.user.findUnique({ where: { email } });
   }
+
   async create(createUserDto: CreateUserDto) {
     const result = await this.prismaService.user.create({
       data: createUserDto,
@@ -40,5 +42,13 @@ export class UsersService {
     const result = await this.prismaService.user.delete({ where: { id } });
     this.logger.warn(`User has been deleted : ${JSON.stringify(result)}`);
     return result;
+  }
+
+  async getUserRole(id: string): Promise<any> {
+    const user = await this.prismaService.user.findUnique({
+      where: { id },
+      select: { role: true },
+    });
+    return { roles: [user.role] };
   }
 }

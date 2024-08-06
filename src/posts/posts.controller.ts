@@ -12,21 +12,14 @@ import {
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Me } from './../auth/guards/current-user/current-user.guard';
-import { JwtAuthGuard } from './../auth/guards/jwt-auth/jwt-auth.guard';
+import { Me } from '../auth/guards/current-user.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PostQueryDto } from './dto/query.dto';
 import { isEmpty } from '../util';
 
 @Controller('posts')
 export class PostsController {
-  constructor(private readonly postsService: PostsService) { }
-
-  @UseGuards(JwtAuthGuard)
-  @Post()
-  create(@Me() me: { id: string, email: string }, @Body() createPostDto: CreatePostDto) {
-
-    return this.postsService.create({ ...createPostDto, userId: me.id });
-  }
+  constructor(private readonly postsService: PostsService) {}
 
   @Get()
   findAll(@Query() query: PostQueryDto) {
@@ -37,6 +30,16 @@ export class PostsController {
   findOne(@Param('id') id: string, @Query() query: PostQueryDto) {
     return this.postsService.findOne(id, query);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post()
+  create(
+    @Me() me: { id: string; email: string },
+    @Body() createPostDto: CreatePostDto,
+  ) {
+    return this.postsService.create({ ...createPostDto, userId: me.id });
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
