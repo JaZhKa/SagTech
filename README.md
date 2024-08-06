@@ -39,6 +39,9 @@ $ npm install
 $ npm run start
 
 # watch mode
+$ npm run generate
+$ npm run migrate
+$ npm run deploy
 $ npm run start:dev
 
 # production mode
