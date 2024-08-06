@@ -3,11 +3,12 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   UseGuards,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -16,6 +17,7 @@ import { Me } from '../auth/guards/current-user.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PostQueryDto } from './dto/query.dto';
 import { isEmpty } from '../util';
+import { userRole } from './../users/users.interface';
 
 @Controller('posts')
 export class PostsController {
@@ -31,8 +33,8 @@ export class PostsController {
     return this.postsService.findOne(id, query);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(
     @Me() me: { id: string; email: string },
     @Body() createPostDto: CreatePostDto,
@@ -41,13 +43,32 @@ export class PostsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-    return this.postsService.update(id, updatePostDto);
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @Me() user: any,
+  ) {
+    const post = await this.postsService.findOne(id);
+    if (post.userId === user.id) {
+      return this.postsService.update(id, updatePostDto);
+    } else {
+      throw new ForbiddenException(
+        'You do not have permission to update this post.',
+      );
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postsService.remove(id);
+  @UseGuards(JwtAuthGuard)
+  async remove(@Param('id') id: string, @Me() user: any) {
+    const post = await this.postsService.findOne(id);
+    if (post.userId === user.id || user.role === userRole.ADMIN) {
+      return this.postsService.remove(id);
+    } else {
+      throw new ForbiddenException(
+        'You do not have permission to update this post.',
+      );
+    }
   }
 }
